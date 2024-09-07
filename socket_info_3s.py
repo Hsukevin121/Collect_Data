@@ -8,7 +8,7 @@ import time
 INFLUXDB_URL = "http://192.168.0.39:30001"
 BUCKET = "socket_info"
 ORG = "influxdata"
-TOKEN = "RyGBIs41IMTRR0YHAi0q2oKJDh6zzIjQ"
+TOKEN = "l2yrVMPtDQW6Zl9KEVRI2o3LqloJcZue"
 
 # 目標 SNMP 伺服器
 SNMP_HOST = "192.168.1.10"
