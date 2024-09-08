@@ -36,9 +36,10 @@ def fetch_ru_info():
 def write_to_influxdb(tx_attenuation):
     """将数据写入 InfluxDB"""
     timestamp = datetime.datetime.utcnow().isoformat()
-    point = Point("RU01001").field("tx_attenuation", tx_attenuation).time(timestamp, WritePrecision.NS)
+    # 添加 DeviceId 字段，值为 2001
+    point = Point("RU01001").field("tx_attenuation", tx_attenuation).field("DeviceId", 2001).time(timestamp, WritePrecision.NS)
     write_api.write(bucket=BUCKET, org=ORG, record=point)
-    print(f"Successfully wrote tx_attenuation: {tx_attenuation} to InfluxDB")
+    print(f"Successfully wrote tx_attenuation: {tx_attenuation} and DeviceId: 2001 to InfluxDB")
 
 def main():
     while True:

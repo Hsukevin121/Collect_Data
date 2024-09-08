@@ -63,7 +63,7 @@ fault_to_device_mapping = {
 }
 
 # Update MySQL Device Status Based on Fault ID
-def update_device_status(fault_id, device_type, new_status):
+def update_device_status(fault_id, device_type, new_status, is_cleared):
     db_connection = pymysql.connect(
         host='192.168.0.39',
         user='root',
@@ -73,17 +73,40 @@ def update_device_status(fault_id, device_type, new_status):
 
     try:
         with db_connection.cursor() as cursor:
-            if device_type == 'RU_DU':
-                # 更新RU和DU设备
-                cursor.execute("UPDATE devicelist SET status = %s WHERE devicetype LIKE 'RU%%'", (new_status,))
-                cursor.execute("UPDATE devicelist SET status = %s WHERE devicetype LIKE 'DU%%'", (new_status,))
-            elif device_type == 'DU_CU':
-                # 更新DU和CU设备
-                cursor.execute("UPDATE devicelist SET status = %s WHERE devicetype LIKE 'DU%%'", (new_status,))
-                cursor.execute("UPDATE devicelist SET status = %s WHERE devicetype LIKE 'CU%%'", (new_status,))
+            # 如果故障未清除 (is_cleared == "false")，将 message 设置为 fault_id
+            if is_cleared == "false":
+                message = f"Fault detected, Fault ID: {fault_id}"
+                new_status = 3
             else:
-                # 更新指定设备类型的状态
-                cursor.execute("UPDATE devicelist SET status = %s WHERE devicetype LIKE %s", (new_status, f'{device_type}%'))
+                message = "The device is healthy"
+                new_status = 1
+
+            if device_type == 'RU_DU':
+                # 更新 RU 和 DU 设备的状态、fault_id 和 message
+                cursor.execute(
+                    "UPDATE devicelist SET status = %s, message = %s WHERE devicename LIKE 'CU%%'", 
+                    (new_status, message)
+                )
+                cursor.execute(
+                    "UPDATE devicelist SET status = %s, message = %s WHERE devicename LIKE 'CU%%'", 
+                    (new_status, message)
+                )
+            elif device_type == 'DU_CU':
+                # 更新 DU 和 CU 设备的状态、fault_id 和 message
+                cursor.execute(
+                    "UPDATE devicelist SET status = %s, message = %s WHERE devicename LIKE 'CU%%'", 
+                    (new_status, message)
+                )
+                cursor.execute(
+                    "UPDATE devicelist SET status = %s, message = %s WHERE devicename LIKE 'CU%%'", 
+                    (new_status, message)
+                )
+            else:
+                # 更新指定设备类型的状态、fault_id 和 message
+                cursor.execute(
+                    "UPDATE devicelist SET status = %s, message = %s WHERE devicename LIKE %s", 
+                    (new_status, message, f'{device_type}%')
+                )
 
         db_connection.commit()
     except Exception as e:
@@ -181,10 +204,10 @@ def on_message(client, userdata, msg):
             
             # If is_cleared is "false", set status to 3 (Idle state)
             if is_cleared == "false":
-                update_device_status(fault_id, device_type, 3)
-            # If is_cleared is "true", set status to 1 (Active state)
+                update_device_status(fault_id, device_type, 3, is_cleared)
+            # If is_cleared is "true", set status to 1 (Active state) and message to "The device is healthy"
             elif is_cleared == "true":
-                update_device_status(fault_id, device_type, 1)
+                update_device_status(fault_id, device_type, 1, is_cleared)
 
         # 生成要發送的 JSON 資料
         json_payload = generate_json(mqtt_data)
@@ -192,8 +215,6 @@ def on_message(client, userdata, msg):
         send_http_request(json_payload)
     except Exception as e:
         print('Error occurred while processing message:', e)
-
-
 
 # 设置 MQTT 客户端
 client = mqtt.Client(protocol=mqtt.MQTTv311)
