@@ -1,5 +1,5 @@
 o1_fm_v1.py
-o1_pm_new.py
+o1_pm.py
 o1_ru.py
 socket_info_test.py
 BBU_power.py
