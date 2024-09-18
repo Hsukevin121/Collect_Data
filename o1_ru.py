@@ -8,7 +8,7 @@ import datetime
 INFLUXDB_URL = "http://192.168.0.39:30001"  # 替换为你的 InfluxDB URL
 BUCKET = "o1_performance"
 ORG = "influxdata"  # 替换为你的组织名称
-TOKEN = "l2yrVMPtDQW6Zl9KEVRI2o3LqloJcZue"  # 替换为你的 InfluxDB 访问令牌
+TOKEN = "pDDWqgH1csy4LYVTPKmsoXfAalFgd4pi"  # 替换为你的 InfluxDB 访问令牌
 
 # 初始化 InfluxDB 客户端
 client = InfluxDBClient(url=INFLUXDB_URL, token=TOKEN, org=ORG)
